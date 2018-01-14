@@ -93,6 +93,8 @@ def scrape_review(movie, page_num=0):
         for review in reviewboxes:
             reviewer_m = review.find("div", class_="reviewer_m")
             empathy = reviewer_m.find("li", class_="btEmpathy").find("span")
+            if "本文にネタバレがあります。" in review.find("p").text:
+                continue
             movie.set_review(
                 review.h3.a.get("href").split("/")[4],
                 reviewer_m.dl.find("strong").text,
