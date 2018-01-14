@@ -74,9 +74,10 @@ def scrape_ranking(base_url, page_number):
             yield movie
 
 
-def scrape_review(movie, page_num):
+def scrape_review(movie, page_num=0):
     """
     movie: Movielib()
+    page_num: int
     """
     review_url = movie.review_url("http://www.eiga.com/movie/")
     for page in range(1, page_num + 1):
@@ -98,9 +99,7 @@ def scrape_review(movie, page_num):
                 review.find("p").text,
                 empathy.text.split(" ")[1]
             )
-            print(movie.movie["reviews"])
             time.sleep(1)
-            yield movie
 
 
 def main():
@@ -114,14 +113,19 @@ def main():
 
     # ランキングページをクローリングする
     base_url = "http://www.eiga.com/movie/review/ranking/"
-    movies_gene = scrape_ranking(base_url, 1)
+    movies_gene = scrape_ranking(base_url, 2)
 
     # レビューページをクローリングする
     for movie in movies_gene:
+        print("=" * 20)
+        print("start movie: {}".format(movie))
         time.sleep(1)
-        scrape_review(movie, 5)
-        collection.insert_one(movie.movie)
-        print(movie)
+        scrape_review(movie, 1)
+        collection.update({"code": movie.movie["code"]},
+                          {"$set": movie.movie},
+                          upsert=True
+                          )
+        print([x["code"] for x in movie.movie["reviews"]])
 
 
 if __name__ == "__main__":
