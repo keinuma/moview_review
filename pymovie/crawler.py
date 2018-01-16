@@ -27,8 +27,8 @@ class Movielib(object):
         return "Movie name: {}.".format(self.movie["title"])
 
     def review_url(self, baseurl):
-        """make review url""":w
-        
+        """make review url"""
+
         url = baseurl + self.movie["code"] + "/review/all/"
         return url
 
