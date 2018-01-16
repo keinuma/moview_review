@@ -6,8 +6,7 @@ crawling movie review and save in database.
 import time
 import requests
 from bs4 import BeautifulSoup
-from pymongo import MongoClient
-
+import pymysql
 
 class Movielib(object):
     """
@@ -28,7 +27,8 @@ class Movielib(object):
         return "Movie name: {}.".format(self.movie["title"])
 
     def review_url(self, baseurl):
-        """make review url"""
+        """make review url""":w
+        
         url = baseurl + self.movie["code"] + "/review/all/"
         return url
 
