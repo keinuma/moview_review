@@ -4,7 +4,7 @@ SQLAlchemyの基本セッティング
 """
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 # mysqlのDB設定
@@ -18,7 +18,10 @@ ENGINE = create_engine(
 )
 
 # session作成
-SESSION = sessionmaker(bind=ENGINE)
+SESSION = scoped_session(sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=ENGINE))
 
 # modelで使用
 BASE = declarative_base()
