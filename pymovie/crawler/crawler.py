@@ -3,55 +3,19 @@
 crawling movie review and save in database.
 """
 
+import os
 import time
 import requests
 from bs4 import BeautifulSoup
-import pymysql
-
-class Movielib(object):
-    """
-    code: primary key for each movie
-    name: movie title
-    rank: movie ranking
-    date: open date
-    """
-
-    def __init__(self, code, title, rank, date):
-        self.movie = {"code": code,
-                      "title": title,
-                      "rank": rank,
-                      "date": date,
-                      "reviews": []}
-
-    def __repr__(self):
-        return "Movie name: {}.".format(self.movie["title"])
-
-    def review_url(self, baseurl):
-        """make review url"""
-
-        url = baseurl + self.movie["code"] + "/review/all/"
-        return url
-
-    def set_review(self, code, points, content, empathy):
-        """
-        code: review code
-        points: evaluation
-        content: review text
-        empathy: number of empathy
-        """
-        review = {"code": code,
-                  "points": points,
-                  "content": content,
-                  "empathy": empathy}
-        codes = {x["code"] for x in self.movie["reviews"]}
-        if code not in codes:
-            self.movie["reviews"].append(review)
+from ..model import setting, model
 
 
 def scrape_ranking(base_url, page_number):
     """
-    base_url: base url for crawling
-    page_number: page number integer
+    :param base_url: 映画の見出しページ
+    :param page_number: スクレイピングするページ数
+
+    :return movie: dict - 映画ディクショナリのジェネレータ
     """
     for page in range(1, page_number + 1):
         url = base_url + str(page)
@@ -60,74 +24,106 @@ def scrape_ranking(base_url, page_number):
         if response.status_code >= 400:
             raise Exception(response.status_code)
         # ランキングの集合を取得
-        rankboxes = BeautifulSoup(
+        rank_boxes = BeautifulSoup(
             response.text,
             "html5lib"
         ).find_all("div", class_="rankBox")
-        for rankbox in rankboxes:
-            head4 = rankbox.find("h4")
-            movie = Movielib(
-                head4.a.get("href").split("/")[2],
-                head4.a.text,
-                head4.span.text,
-                rankbox.p.text)
+        for rank_box in rank_boxes:
+            head4 = rank_box.find("h4")
+            movie = dict(
+                code=head4.a.get("href").split("/")[2],
+                title=head4.a.text,
+                rank=head4.span.text,
+                open_date=rank_box.p.text)
             yield movie
 
 
-def scrape_review(movie, page_num=0):
+def scrape_review(movie, base_url, page_num=0):
     """
-    movie: Movielib()
-    page_num: int
+    :param movie: dict - 映画ディクショナリ
+    :param base_url: str - レビューの詳細ページ
+    :param page_num: int - スクレイピングを行うページ数
+
+    :return review: dict - レビューのジェネレータ
     """
-    review_url = movie.review_url("http://www.eiga.com/movie/")
     for page in range(1, page_num + 1):
-        url = review_url + str(page)
+        url = os.path.join(base_url + str(page))
         session = requests.Session()
         response = session.get(url)
         if response.status_code >= 400:
             raise Exception(response.status_code)
         content = BeautifulSoup(response.text, "html5lib")
         reviews = content.find_all("div", class_="review")
-        reviewboxes = content.find_all("div", class_="review pro") + reviews
+        review_boxes = content.find_all("div", class_="review pro") + reviews
 
-        for review in reviewboxes:
+        for review in review_boxes:
             reviewer_m = review.find("div", class_="reviewer_m")
             empathy = reviewer_m.find("li", class_="btEmpathy").find("span")
+            # ネタバレページはjavascriptのためスキップ
             if "本文にネタバレがあります。" in review.find("p").text:
                 continue
-            movie.set_review(
-                review.h3.a.get("href").split("/")[4],
-                reviewer_m.dl.find("strong").text,
-                review.find("p").text,
-                empathy.text.split(" ")[1]
+            movie_review = dict(
+                code=review.h3.a.get("href").split("/")[4],
+                movie_code=movie["code"],
+                points=reviewer_m.dl.find("strong").text,
+                content=review.find("p").text,
+                empathy=empathy.text.split(" ")[1]
             )
             time.sleep(1)
+            yield movie_review
+
+
+def save_movie(data, session):
+    """
+    :param data: dict - 映画ディクショナリ
+    :param session: sqlalchemy.session - データベースセッション
+    :return: None
+    """
+    movie = model.Movie(**data)
+    session.add(movie)
+    session.commit()
+    return None
+
+
+def save_reviews(data, session):
+    """
+    :param data: generator(dict) - レビューのジェネレータ
+    :param session: sqlalchemy.session - データベースセッション
+    :return: None
+    """
+    reviews = []
+    for review_dic in data:
+        review = model.Review(**review_dic)
+        reviews.append(review)
+    session.add_all(reviews)
+    session.commit()
+    return None
 
 
 def main():
     """
     クローラのメイン処理
     """
-    # MongoDBのクライアント取得
-    client = MongoClient("localhost", 27017)
-    collection = client.nltk.eiga  # nltkデータベースのeigaコレクションを得る
-    collection.create_index("code", unique=True)
-
     # ランキングページをクローリングする
-    base_url = "http://www.eiga.com/movie/review/ranking/"
-    movies_gene = scrape_ranking(base_url, 2)
+    base_url_rank = "http://www.eiga.com/movie/review/ranking/"
+    base_url_review = "http://www.eiga.com/movie/"
+
+    # データベースのセッション作成
+    session = setting.SESSION()
+    # すでに登録されている映画のコードを取得
+    movie_code_saved = session.query(model.Movie.code).all()
+    movies_gene = scrape_ranking(base_url_rank, 2)
 
     # レビューページをクローリングする
     for movie in movies_gene:
         print("=" * 20)
         print("start movie: {}".format(movie))
+        # 映画がmasterに登録されていなければ、insert
+        if movie['code'] not in movie_code_saved:
+            save_movie(movie, session)
         time.sleep(1)
-        scrape_review(movie, 1)
-        collection.update({"code": movie.movie["code"]},
-                          {"$set": movie.movie},
-                          upsert=True
-                          )
-        print([x["code"] for x in movie.movie["reviews"]])
+        reviews = scrape_review(movie, base_url_review, 1)
+        save_reviews(reviews, session)
 
 
 if __name__ == "__main__":
