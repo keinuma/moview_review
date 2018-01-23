@@ -18,7 +18,7 @@ def scrape_ranking(base_url, page_number):
     :return movie: dict - 映画ディクショナリのジェネレータ
     """
     for page in range(1, page_number + 1):
-        url = base_url + str(page)
+        url = os.path.join(base_url, str(page))
         session = requests.Session()
         response = session.get(url)
         if response.status_code >= 400:
@@ -47,16 +47,15 @@ def scrape_review(movie, base_url, page_num=0):
     :return review: dict - レビューのジェネレータ
     """
     for page in range(1, page_num + 1):
-        url = os.path.join(base_url + str(page))
+        url = os.path.join(base_url, 'review/all', str(page))
         session = requests.Session()
         response = session.get(url)
         if response.status_code >= 400:
             raise Exception(response.status_code)
         content = BeautifulSoup(response.text, "html5lib")
         reviews = content.find_all("div", class_="review")
-        review_boxes = content.find_all("div", class_="review pro") + reviews
 
-        for review in review_boxes:
+        for review in reviews:
             reviewer_m = review.find("div", class_="reviewer_m")
             empathy = reviewer_m.find("li", class_="btEmpathy").find("span")
             # ネタバレページはjavascriptのためスキップ
@@ -69,6 +68,8 @@ def scrape_review(movie, base_url, page_num=0):
                 content=review.find("p").text,
                 empathy=empathy.text.split(" ")[1]
             )
+            if movie_review['points'] == '-':
+                movie_review['points'] = 0
             time.sleep(1)
             yield movie_review
 
@@ -85,14 +86,17 @@ def save_movie(data, session):
     return None
 
 
-def save_reviews(data, session):
+def save_reviews(data, session, saved=None):
     """
     :param data: generator(dict) - レビューのジェネレータ
     :param session: sqlalchemy.session - データベースセッション
+    :param saved: list - すでに登録されてあるレビューコードのリスト
     :return: None
     """
     reviews = []
     for review_dic in data:
+        if int(review_dic['code']) in saved:
+            continue
         review = model.Review(**review_dic)
         reviews.append(review)
     session.add_all(reviews)
@@ -111,7 +115,8 @@ def main():
     # データベースのセッション作成
     session = setting.SESSION()
     # すでに登録されている映画のコードを取得
-    movie_code_saved = session.query(model.Movie.code).all()
+    movie_code_saved = [x[0] for x in session.query(model.Movie.code).all()]
+    review_code_saved = [x[0] for x in session.query(model.Review.code).all()]
     movies_gene = scrape_ranking(base_url_rank, 2)
 
     # レビューページをクローリングする
@@ -119,11 +124,12 @@ def main():
         print("=" * 20)
         print("start movie: {}".format(movie))
         # 映画がmasterに登録されていなければ、insert
-        if movie['code'] not in movie_code_saved:
+        if int(movie['code']) not in movie_code_saved:
             save_movie(movie, session)
         time.sleep(1)
-        reviews = scrape_review(movie, base_url_review, 1)
-        save_reviews(reviews, session)
+        temp_url = os.path.join(base_url_review, movie['code'])
+        reviews = scrape_review(movie, temp_url, 1)
+        save_reviews(reviews, session, saved=review_code_saved)
 
 
 if __name__ == "__main__":
