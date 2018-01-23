@@ -4,12 +4,12 @@ drop table if exists `pynltk`.`m_movie`;
 create table `pynltk`.`m_movie` (
     `code` int(10) unsigned not null primary key,
     `title` varchar(30),
-    `open_date` datetime,
+    `open_date` varchar(50),
     `created` datetime
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
-drop table if exists `movie_review`;
+drop table if exists `t_review`;
 create table `pynltk`.`t_review` (
     `code` int not null,
     `movie_code` int(10) unsigned not null,
@@ -18,6 +18,5 @@ create table `pynltk`.`t_review` (
     `empathy` int not null,
     `created` datetime,
 
-    primary key (`code`),
-    foreign key (`movie_code`) references `m_movie`(`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    primary key (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

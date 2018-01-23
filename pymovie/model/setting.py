@@ -18,7 +18,7 @@ def load_config(s: str) -> str:
 
 # mysqlのDB設定
 DATABASE = 'mysql+pymysql://{username}:{password}@' \
-           '{host}/{db_name}?charset=utf8'
+           '{host}/{db_name}?charset=utf8mb4'
 
 DATABASE = load_config(DATABASE)
 

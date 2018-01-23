@@ -4,7 +4,7 @@
 """
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, Unicode, DateTime
 from setting import BASE, ENGINE
 
 
@@ -18,8 +18,8 @@ class Movie(BASE):
     """
     __tablename__ = 'm_movie'
     code = Column(Integer, primary_key=True)
-    title = Column(String(30))
-    open_date = Column(DateTime)
+    title = Column(Unicode(30))
+    open_date = Column(Unicode)
     created = Column(DateTime)
 
     def __init__(self, code, title=None, open_date=None):
@@ -44,9 +44,9 @@ class Review(BASE):
     """
     __tablename__ = 't_review'
     code = Column(Integer, primary_key=True)
-    movie_code = Column(Integer, ForeignKey('m_movie.code'))
+    movie_code = Column(Integer)
     points = Column(Integer)
-    content = Column(Text)
+    content = Column(Unicode)
     empathy = Column(Integer)
     created = Column(DateTime)
 
