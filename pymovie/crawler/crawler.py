@@ -19,8 +19,8 @@ def scrape_ranking(base_url, movie_num=1, init_page=1):
     :return movie: dict - 映画ディクショナリのジェネレータ
     """
     # 1ページあたり映画数10
-    page_num = (movie_num // 10) + 1
-    page_range = range(init_page, init_page + page_num + 1)
+    page_num = movie_num // 10
+    page_range = range(init_page, init_page + page_num)
     last = movie_num % 10
 
     for page in page_range:
@@ -56,7 +56,7 @@ def scrape_review(movie, base_url, review_num=0, init_page=1):
     :return review: dict - レビューのジェネレータ
     """
     # 1ページあたりのレビュー数20
-    page_num = (review_num // 20) + 1
+    page_num = review_num // 20
     page_range = range(init_page, init_page + page_num + 1)
     last = review_num % 20
 
