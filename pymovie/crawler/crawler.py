@@ -42,7 +42,6 @@ def scrape_ranking(base_url, movie_num=1, init_page=1):
             movie = dict(
                 code=head4.a.get("href").split("/")[2],
                 title=head4.a.text,
-                rank=head4.span.text,
                 open_date=rank_box.p.text)
             yield movie
 
@@ -134,7 +133,7 @@ def main():
     # すでに登録されている映画のコードを取得
     movie_code_saved = [x[0] for x in session.query(model.Movie.code).all()]
     review_code_saved = [x[0] for x in session.query(model.Review.code).all()]
-    movies_gene = scrape_ranking(base_url_rank, 2)
+    movies_gene = scrape_ranking(base_url_rank, movie_num=2, init_page=4)
 
     # レビューページをクローリングする
     for movie in movies_gene:
@@ -145,7 +144,7 @@ def main():
             save_movie(movie, session)
         time.sleep(1)
         temp_url = os.path.join(base_url_review, movie['code'])
-        reviews = scrape_review(movie, temp_url, 1)
+        reviews = scrape_review(movie, temp_url, review_num=10, init_page=1)
         save_reviews(reviews, session, saved=review_code_saved)
 
 
