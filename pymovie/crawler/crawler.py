@@ -20,7 +20,7 @@ def scrape_ranking(base_url, movie_num=1, init_page=1):
     """
     # 1ページあたり映画数10
     page_num = movie_num // 10
-    page_range = range(init_page, init_page + page_num)
+    page_range = range(init_page, init_page + page_num + 1)
     last = movie_num % 10
 
     for page in page_range:
@@ -46,7 +46,7 @@ def scrape_ranking(base_url, movie_num=1, init_page=1):
             yield movie
 
 
-def scrape_review(movie, base_url, review_num=0, init_page=1):
+def scrape_review(movie, base_url, review_num=1, init_page=1):
     """
     :param movie: dict - 映画ディクショナリ
     :param base_url: str - レビューの詳細ページ
@@ -55,13 +55,14 @@ def scrape_review(movie, base_url, review_num=0, init_page=1):
 
     :return review: dict - レビューのジェネレータ
     """
+    temp_url = os.path.join(base_url, movie['code'])
     # 1ページあたりのレビュー数20
     page_num = review_num // 20
     page_range = range(init_page, init_page + page_num + 1)
     last = review_num % 20
 
     for page in page_range:
-        url = os.path.join(base_url, 'review/all', str(page))
+        url = os.path.join(temp_url, 'review/all', str(page))
         session = requests.Session()
         response = session.get(url)
         if response.status_code >= 400:
@@ -143,8 +144,7 @@ def main():
         if int(movie['code']) not in movie_code_saved:
             save_movie(movie, session)
         time.sleep(1)
-        temp_url = os.path.join(base_url_review, movie['code'])
-        reviews = scrape_review(movie, temp_url, review_num=10, init_page=1)
+        reviews = scrape_review(movie, base_url_review, review_num=10, init_page=1)
         save_reviews(reviews, session, saved=review_code_saved)
 
 
