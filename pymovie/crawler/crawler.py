@@ -10,14 +10,20 @@ from bs4 import BeautifulSoup
 from ..model import setting, model
 
 
-def scrape_ranking(base_url, page_number):
+def scrape_ranking(base_url, movie_num=1, init_page=1):
     """
-    :param base_url: 映画の見出しページ
-    :param page_number: スクレイピングするページ数
+    :param base_url: string 基本URL
+    :param movie_num: int スクレピングする映画数
+    :param init_page: int スクレイピング開始のページ
 
     :return movie: dict - 映画ディクショナリのジェネレータ
     """
-    for page in range(1, page_number + 1):
+    # 1ページあたり映画数10
+    page_num = (movie_num // 10) + 1
+    page_range = range(init_page, init_page + page_num + 1)
+    last = movie_num % 10
+
+    for page in page_range:
         url = os.path.join(base_url, str(page))
         session = requests.Session()
         response = session.get(url)
@@ -28,7 +34,10 @@ def scrape_ranking(base_url, page_number):
             response.text,
             "html5lib"
         ).find_all("div", class_="rankBox")
-        for rank_box in rank_boxes:
+        for i, rank_box in enumerate(rank_boxes):
+            # 目標の映画数を取得したら終了
+            if page == max(page_range) and i == last:
+                break
             head4 = rank_box.find("h4")
             movie = dict(
                 code=head4.a.get("href").split("/")[2],
@@ -38,15 +47,21 @@ def scrape_ranking(base_url, page_number):
             yield movie
 
 
-def scrape_review(movie, base_url, page_num=0):
+def scrape_review(movie, base_url, review_num=0, init_page=1):
     """
     :param movie: dict - 映画ディクショナリ
     :param base_url: str - レビューの詳細ページ
-    :param page_num: int - スクレイピングを行うページ数
+    :param review_num: int - スクレイピングをするレビュー数
+    :param init_page: int - スタートページ
 
     :return review: dict - レビューのジェネレータ
     """
-    for page in range(1, page_num + 1):
+    # 1ページあたりのレビュー数20
+    page_num = (review_num // 20) + 1
+    page_range = range(init_page, init_page + page_num + 1)
+    last = review_num % 20
+
+    for page in page_range:
         url = os.path.join(base_url, 'review/all', str(page))
         session = requests.Session()
         response = session.get(url)
@@ -55,7 +70,9 @@ def scrape_review(movie, base_url, page_num=0):
         content = BeautifulSoup(response.text, "html5lib")
         reviews = content.find_all("div", class_="review")
 
-        for review in reviews:
+        for i, review in enumerate(reviews):
+            if page == max(page_range) and i == last:
+                break
             reviewer_m = review.find("div", class_="reviewer_m")
             empathy = reviewer_m.find("li", class_="btEmpathy").find("span")
             # ネタバレページはjavascriptのためスキップ
