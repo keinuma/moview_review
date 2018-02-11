@@ -121,7 +121,7 @@ def save_reviews(data, session, saved=None):
     return None
 
 
-def main():
+def main(start=(1, 3), movie_num=5, review_num=10):
     """
     クローラのメイン処理
     """
@@ -134,7 +134,9 @@ def main():
     # すでに登録されている映画のコードを取得
     movie_code_saved = [x[0] for x in session.query(model.Movie.code).all()]
     review_code_saved = [x[0] for x in session.query(model.Review.code).all()]
-    movies_gene = scrape_ranking(base_url_rank, movie_num=2, init_page=4)
+    movies_gene = scrape_ranking(base_url_rank,
+                                 movie_num=movie_num,
+                                 init_page=start[0])
 
     # レビューページをクローリングする
     for movie in movies_gene:
@@ -144,7 +146,10 @@ def main():
         if int(movie['code']) not in movie_code_saved:
             save_movie(movie, session)
         time.sleep(1)
-        reviews = scrape_review(movie, base_url_review, review_num=10, init_page=1)
+        reviews = scrape_review(movie,
+                                base_url_review,
+                                review_num=review_num,
+                                init_page=start[1])
         save_reviews(reviews, session, saved=review_code_saved)
 
 

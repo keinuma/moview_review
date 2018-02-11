@@ -1,0 +1,22 @@
+[
+    {
+        "name": "code",
+        "type": "INTEGER"
+    },
+    {
+        "name": "movie_code",
+        "type": "INTEGER"
+    },
+    {
+        "name": "content",
+        "type": "STRING"
+    },
+    {
+        "name": "points",
+        "type": "INTEGER"
+    },
+    {
+        "name": "empathy",
+        "type": "INTEGER"
+    }
+]
