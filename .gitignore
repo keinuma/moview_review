@@ -1,1 +1,2 @@
 ./pymovie/config.json
+__pycache__/*

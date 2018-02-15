@@ -17,6 +17,13 @@ create table `pynltk`.`t_review` (
     `content` text not null,
     `empathy` int not null,
     `created` datetime,
-
     primary key (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+drop table if exists `pynltk`.`t_analyzed`;
+create table `pynltk`.`t_analyzed` (
+    `code` int not null,
+    `magnitude` float not null,
+    `score` float not null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

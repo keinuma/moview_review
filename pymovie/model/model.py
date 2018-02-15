@@ -4,7 +4,7 @@
 """
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, Unicode, DateTime
+from sqlalchemy import Column, Integer, Unicode, DateTime, Float
 from .setting import BASE
 
 
@@ -61,3 +61,24 @@ class Review(BASE):
 
     def __repr__(self):
         return '<Review: %r>' % self.content
+
+
+class Analyzed(BASE):
+    """
+    レビューモデル:
+        code: int - 主キー
+        magnitude: float - 感情の振れ幅
+        score: float - 感情
+    """
+    __tablename__ = 't_analyzed'
+    code = Column(Integer, primary_key=True)
+    magnitude = Column(Float)
+    score = Column(Float)
+
+    def __init__(self, code, magnitude=None, score=None):
+        self.code = code
+        self.magnitude = magnitude
+        self.score = score
+
+    def __repr__(self):
+        return '<Score: %r, Magnitude: %r>' % (self.score, self.magnitude)
