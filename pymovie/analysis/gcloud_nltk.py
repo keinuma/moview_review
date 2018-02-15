@@ -65,7 +65,7 @@ def save_analysis(data_set):
     :return:
     """
     session = SESSION()
-    saved = session.query(Analyzed.code).all()
+    saved = [x[0] for x in session.query(Analyzed.code).all()]
     analyzed_list = []
     for code, score in data_set:
         if int(code) in saved:
@@ -88,7 +88,7 @@ def main():
     :return:
     """
     query = """
-    select code, content from moviereview.review limit 50
+    select code, content from moviereview.review limit 500
     """
     big_client = bigquery.Client()
     data = load_data(big_client, query)
@@ -96,15 +96,11 @@ def main():
     trans_client = translate.Client()
     lang_client = language.LanguageServiceClient()
     for i, code_content in enumerate(data):
-        print(code_content[1])
         if len(code_content[1]) > 500:
             continue
         en_text = translate_review(trans_client, code_content[1])
         analyzed = analysis_review(lang_client, en_text)
         result.append((code_content[0], analyzed))
-        print(analyzed)
-        if i > 10:
-            break
         time.sleep(1)
     save_analysis(result)
     return result
