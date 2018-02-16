@@ -9,7 +9,8 @@ join
 on
     tr.code = ta.code
 
-join `pynltk`.m_movie mm
+join
+    `pynltk`.m_movie mm
 on
     mm.code = tr.movie_code
 
