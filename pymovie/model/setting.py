@@ -3,24 +3,23 @@
 SQLAlchemyの基本セッティング
 """
 
-import json
+import pathlib
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-
-def load_config(s):
-    with open("config.json") as f:
-        temp = json.load(f)
-        s = s.format_map(temp)
-    return s
+from ..helper import load_config
 
 
 # mysqlのDB設定
 DATABASE = 'mysql+pymysql://{username}:{password}@' \
            '{host}/{db_name}?charset=utf8mb4'
 
-DATABASE = load_config(DATABASE)
+
+CONFIG_PATH = pathlib.Path(__file__)
+
+config = load_config(path=CONFIG_PATH.parents[1])
+DATABASE = DATABASE.format_map(config)
 
 ENGINE = create_engine(
     DATABASE,
