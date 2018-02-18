@@ -3,12 +3,11 @@
 SQLAlchemyの基本セッティング
 """
 
-import pathlib
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-from ..helper import load_config
+from ..config import DB_KEY
 
 
 # mysqlのDB設定
@@ -16,10 +15,7 @@ DATABASE = 'mysql+pymysql://{username}:{password}@' \
            '{host}/{db_name}?charset=utf8mb4'
 
 
-CONFIG_PATH = pathlib.Path(__file__)
-
-config = load_config(path=CONFIG_PATH.parents[1])
-DATABASE = DATABASE.format_map(config)
+DATABASE = DATABASE.format_map(DB_KEY)
 
 ENGINE = create_engine(
     DATABASE,
