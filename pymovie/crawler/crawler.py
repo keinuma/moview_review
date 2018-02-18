@@ -7,7 +7,10 @@ import os
 import time
 import requests
 from bs4 import BeautifulSoup
-from ..model import setting, model
+
+from ..model import SESSION
+from ..model import Movie, Review
+from ..helper import init_getter
 
 
 def scrape_ranking(base_url, movie_num=1, init_page=1):
@@ -97,7 +100,7 @@ def save_movie(data, session):
     :param session: sqlalchemy.session - データベースセッション
     :return: None
     """
-    movie = model.Movie(**data)
+    movie = Movie(**data)
     session.add(movie)
     session.commit()
     return None
@@ -114,7 +117,7 @@ def save_reviews(data, session, saved=None):
     for review_dic in data:
         if int(review_dic['code']) in saved:
             continue
-        review = model.Review(**review_dic)
+        review = Review(**review_dic)
         reviews.append(review)
     session.add_all(reviews)
     session.commit()
@@ -130,10 +133,10 @@ def main(start=(1, 3), movie_num=5, review_num=10):
     base_url_review = "http://www.eiga.com/movie/"
 
     # データベースのセッション作成
-    session = setting.SESSION()
-    # すでに登録されている映画のコードを取得
-    movie_code_saved = [x[0] for x in session.query(model.Movie.code).all()]
-    review_code_saved = [x[0] for x in session.query(model.Review.code).all()]
+    session = SESSION()
+    # 登録されている映画のコードを取得
+    movie_code_saved = init_getter(session=session, column=Movie.code)
+    review_code_saved = init_getter(session=session, column=Review.code)
     movies_gene = scrape_ranking(base_url_rank,
                                  movie_num=movie_num,
                                  init_page=start[0])

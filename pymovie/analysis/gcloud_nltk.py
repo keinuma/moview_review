@@ -4,13 +4,27 @@ GCPから映画レビューの翻訳および感情分析を行う
 """
 
 
-import time
 from google.cloud import bigquery
 from google.cloud import translate
 from google.cloud import language
 
 from ..model.model import Analyzed
 from ..model.setting import SESSION
+
+
+def make_query(limit=100):
+    """
+    BigQueryから得るデータ量を定義
+    :param limit:
+    :return:
+    """
+    query = """
+            select code, content
+            from moviereview.review
+            limit {num}
+            """
+    query = query.format(num=limit)
+    return query
 
 
 def load_data(client, query):
@@ -65,7 +79,7 @@ def save_analysis(data_set):
     :return:
     """
     session = SESSION()
-    saved = [x[0] for x in session.query(Analyzed.code).all()]
+    saved = (x[0] for x in session.query(Analyzed.code).all())
     analyzed_list = []
     for code, score in data_set:
         if int(code) in saved:
@@ -87,21 +101,19 @@ def main():
     メイン処理
     :return:
     """
-    query = """
-    select code, content from moviereview.review limit 500
-    """
+    query = make_query(500)
     big_client = bigquery.Client()
     data = load_data(big_client, query)
     result = []
     trans_client = translate.Client()
     lang_client = language.LanguageServiceClient()
     for i, code_content in enumerate(data):
+        # HTTP 411 error
         if len(code_content[1]) > 500:
             continue
         en_text = translate_review(trans_client, code_content[1])
         analyzed = analysis_review(lang_client, en_text)
         result.append((code_content[0], analyzed))
-        time.sleep(1)
     save_analysis(result)
     return result
 
