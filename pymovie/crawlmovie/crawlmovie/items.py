@@ -15,6 +15,8 @@ class MoviePage(Item):
     code = Field()
     title = Field()
     open_date = Field()
+    description = Field()
+    director = Field()
 
 
 class ReviewPage(Item):
