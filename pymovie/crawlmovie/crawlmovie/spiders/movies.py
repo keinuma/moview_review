@@ -46,5 +46,5 @@ class MoviesSpider(scrapy.Spider):
         item['title'] = response.css('div.moveInfoBox > h1::text').extract_first()
         item['open_date'] = response.css('span.opn_date > strong::attr("content")').extract_first()
         item['description'] = response.css('div.outline > p::text').extract_first()
-        item['director'] = response.css('dd[itemprop=director]')
+        item['director'] = response.css('dd.f > a > span::text').extract_first()
         yield item
