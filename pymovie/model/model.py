@@ -20,12 +20,17 @@ class Movie(BASE):
     code = Column(Integer, primary_key=True)
     title = Column(Unicode(30))
     open_date = Column(Unicode)
+    description = Column(Unicode)
+    director = Column(Unicode)
     created = Column(DateTime)
 
-    def __init__(self, code, title=None, open_date=None):
+    def __init__(self, code, title=None, open_date=None,
+                 description=None, director=None):
         self.code = code
         self.title = title
         self.open_date = open_date
+        self.description = description
+        self.director = director
         self.created = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     def __repr___(self):
