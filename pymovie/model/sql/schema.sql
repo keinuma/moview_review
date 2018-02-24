@@ -5,6 +5,8 @@ create table `pynltk`.`m_movie` (
     `code` int(10) unsigned not null primary key,
     `title` varchar(30),
     `open_date` varchar(50),
+    `description` varchar(100),
+    `director` varchar(30),
     `created` datetime
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
