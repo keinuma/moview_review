@@ -2,10 +2,10 @@
 2018/03/02
 """
 
-from pymongo import MongoClient
 from elasticsearch import Elasticsearch
 
-from ..config import MONGO, ELASTIC
+from ..helper import mongo_conn
+from ..config import ELASTIC
 
 
 def define_index(es):
@@ -18,14 +18,6 @@ def define_index(es):
         index='movies',
         ignore=400,
         body={
-            "settings": {
-                "analyzer": {
-                    "kuromoji_analyzer": {
-                        # 日本語形態素解析を使って分割する
-                        "tokenizer": "kuromoji_tokenizer"
-                    }
-                }
-            },
             "mappings": {
                 "movie": {
                     # _allは全フィールドを結合
@@ -34,6 +26,9 @@ def define_index(es):
                             "kuromoji_analyzer"
                     },
                     "properties": {
+                        "code": {
+                            "type": "integer",
+                        },
                         "title": {
                             "type": "string",
                             "analyzer": "kuromoji_analyzer"
@@ -56,22 +51,17 @@ def define_index(es):
 
 def mongo_setting():
     """
-    json型のデータをElasticsearchにロードする
+    json型の映画データをMongoから取得
     :return dict data: 映画データ
     """
-    params = {
-        'host': MONGO['HOST'],
-        'port': MONGO['PORT']
-    }
-    client = MongoClient(**params)
-    db = client[MONGO['DB']]
-    col= db[MONGO['COLLECTION']]
+    col = mongo_conn('movie')
     return col.find(
         {},
         {
             'title': 1,
             'director': 1,
             'description': 1,
+            'code': 1,
             '_id': 0
         }
     )

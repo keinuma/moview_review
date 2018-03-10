@@ -5,7 +5,7 @@
 
 from datetime import datetime
 from sqlalchemy import Column, Integer, Unicode, DateTime, Float
-from .setting import BASE
+from .settings import BASE
 
 
 class Movie(BASE):

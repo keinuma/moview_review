@@ -1,4 +1,4 @@
-from .web_movie import app
+from .movie_app import app
 
 
 if __name__ == '__main__':

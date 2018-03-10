@@ -7,7 +7,8 @@ DB_KEY = {
 
 MONGO = {
     'DB': 'nltk',
-    'COLLECTION': 'movies',
+    'COLLECTION_M': 'movies',
+    'COLLECTION_R': 'reviews',
     'HOST': 'localhost',
     'PORT': 27017
 }

@@ -9,6 +9,9 @@
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
+from sqlalchemy.ext.declarative import declarative_base
+
+
 BOT_NAME = 'crawlmovie'
 
 SPIDER_MODULES = ['crawlmovie.spiders']
@@ -66,7 +69,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'crawlmovie.pipelines.CrawlmoviePipeline': 800,
+    # 'crawlmovie.pipelines.CrawlmoviePipeline': 800,
     'crawlmovie.pipelines.ValidationPipeline': 300
 }
 
@@ -91,8 +94,22 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-DB = 'nltk'
-COLLECTION_MOVIE = 'movies'
-COLLECTION_REVIEW = 'reviews'
-HOST = 'localhost'
-PORT = 27017
+DATABASES_KEY = {
+    'default': {
+        'NAME': 'pynltk',
+        'USER': 'numata',
+        'PASSWORD': 'dagakotowaru15',
+        'HOST': '127.0.0.1',
+    }
+}
+
+
+DB_PATH = 'mysql+pymysql://{USER}:{PASSWORD}@' \
+          '{HOST}/{NAME}?charset=utf8mb4'
+DATABASE = DB_PATH.format(**DATABASES_KEY['default'])
+
+# modelsのbase作成
+BASE = declarative_base()
+
+# 日本語を文字コード指定
+FEED_EXPORT_ENCODING = 'utf-8'
