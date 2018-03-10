@@ -1,5 +1,5 @@
-pymovie/config.json
-pymovie/config.py
+./pymovie/config.json
+./pymovie/config.py
 __pycache__/
 .idea/
 .ipynb_checkpoints/

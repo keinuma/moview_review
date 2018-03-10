@@ -5,10 +5,28 @@ reviewページのスクレイピング
 
 import re
 from scrapy import Spider, Request
-from pymongo import MongoClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 
-from ..settings import HOST, PORT, DB, COLLECTION_MOVIE
+from ..settings import DATABASE
+from ..models import Movie
 from ..items import ReviewPage
+
+
+ENGINE = create_engine(
+    DATABASE,
+    encoding='utf8',
+    echo=True
+)
+
+# session作成
+SESSION = scoped_session(
+    sessionmaker(
+        autocommit=False,
+        autoflush=False,
+        bind=ENGINE
+    )
+)
 
 
 class ReviewsSpider(Spider):
@@ -18,16 +36,10 @@ class ReviewsSpider(Spider):
     review_url = 'http://eiga.com/movie/{}/review/all/'
 
     def __init__(self):
-        params = {
-            'host': HOST,
-            'port': PORT
-        }
-        client = MongoClient(**params)
-        db = client[DB]
-        collection = db[COLLECTION_MOVIE]
-        self.movie_code = collection.find(
-            {},
-            {'code': 1, '_id': 0}
+        session = SESSION()
+        self.movie_code = (
+            str(x[0]) for x
+            in session.query(Movie.movie_code).all()
         )
 
     def parse(self, response):
@@ -37,7 +49,7 @@ class ReviewsSpider(Spider):
         :return:
         """
         for code in self.movie_code:
-            url = self.review_url.format(code['code'])
+            url = self.review_url.format(str(code))
             yield Request(url, self.parse_review)
 
     def parse_review(self, response):
@@ -59,7 +71,7 @@ class ReviewsSpider(Spider):
         :return:
         """
         for review in response.css('div.review'):
-            if "本文にネタバレがあります。" in review.css("p > em::text").extract_first():
+            if review.css("p > em::text").extract_first():
                 continue
             item = ReviewPage()
             item['code'] = review.css('h3 > a::attr(href)').re('\d+')[1]
