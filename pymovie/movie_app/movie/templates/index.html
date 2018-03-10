@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>映画検索</title>
+</head>
+<body>
+<div class="container">
+    <h1>映画検索</h1>
+
+    <form method="post">
+        <div class="row">
+            <div class="col-xs-10">
+                {% csrf_token %}
+                <input type="text" class="form-control" name="word" placeholder="キーワードを入力して下さい.">
+            </div>
+            <div class="col-xs-2">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-md btn-block btn-primary" value="検索">
+            </div>
+        </div>
+    </form>
+
+    <br>
+    {% if post == 1 %}
+    <h3>「{{word}}」の検索結果...</h3>
+    <ul>
+            {% for movie in movies %}
+            <li><a href="{%url 'movie_content' movie.code %}">{{movie.title}}</a></li>
+            {% endfor %}
+    </ul>
+    {% else %}
+    <p>キーワードを入れて検索ボタンを押して下さい.</p>
+    {% endif %}
+</div><!-- container -->
+<script src="//code.jquery.com/jquery.js"></script>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+</body>
+</html>
