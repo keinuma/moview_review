@@ -7,18 +7,20 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 </head>
 <body>
-<div class="box">
-    <article class="post">
-        <h1 class="page-header">作品情報</h1>
-            <h2>タイトル</h2>
-            <p>{{ movie.title }}</p>
-        <h2>公開日</h2>
-        <p>{{ movie.open_date }}</p>
-        <h2>監督</h2>
-        <p class="author">{{ movie.director }}</p>
-        <h2>概要</h2>
-        <p>{{ movie.description }}</p>
-    </article>
+<div class="container">
+<div class="page-header" style="margin-top:-30px;padding-bottom:0px;">
+    <h1><small>{{ movie.title }}</small></h1>
+</div>
+    <h3>
+        公開日
+    </h3>
+    {{ movie.open_date }}
+    <h3>
+        監督
+    </h3>
+    {{ movie.director }}
+    <h3>概要</h3>
+    {{ movie.description }}
 </div>
 <script src="//code.jquery.com/jquery.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
