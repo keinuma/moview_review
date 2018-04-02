@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>映画概要</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 </head>
 <body>
-<h2 class="page-header">映画</h2>
-<h3>映画タイトル</h3>
-<p>{{ movie.title }}</p>
-<h3>公開日</h3>
-<p>{{ movie.open_date }}</p>
-<h3>監督</h3>
-<p>{{ movie.director }}</p>
-<h3>概要</h3>
-<p>{{ movie.description }}</p>
+<div class="box">
+    <article class="post">
+        <h1 class="page-header">作品情報</h1>
+            <h2>タイトル</h2>
+            <p>{{ movie.title }}</p>
+        <h2>公開日</h2>
+        <p>{{ movie.open_date }}</p>
+        <h2>監督</h2>
+        <p class="author">{{ movie.director }}</p>
+        <h2>概要</h2>
+        <p>{{ movie.description }}</p>
+    </article>
 </div>
 <script src="//code.jquery.com/jquery.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-
 </body>
 </html>
